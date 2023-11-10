@@ -4,7 +4,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::error::PmxError;
 use crate::header::Header;
-use crate::{read_bool, read_vec};
+use crate::kits::{read_bool, read_vec};
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct DisplayFrames {

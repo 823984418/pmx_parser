@@ -5,7 +5,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::error::PmxError;
 use crate::header::Header;
-use crate::write_f32x3;
+use crate::kits::{read_f32x3, write_f32x3};
 
 #[derive(Default, Clone, PartialEq)]
 pub struct Vertices {
@@ -172,9 +172,9 @@ impl Skin {
                 bone_index_1: header.bone_index.read(read)?,
                 bone_index_2: header.bone_index.read(read)?,
                 bone_weight_1: read.read_f32::<LittleEndian>()?,
-                sdef_c: crate::read_f32x3(read)?,
-                sdef_r0: crate::read_f32x3(read)?,
-                sdef_r1: crate::read_f32x3(read)?,
+                sdef_c: read_f32x3(read)?,
+                sdef_r0: read_f32x3(read)?,
+                sdef_r1: read_f32x3(read)?,
             }),
             4 => Ok(Skin::QDEF {
                 bone_index_1: header.bone_index.read(read)?,

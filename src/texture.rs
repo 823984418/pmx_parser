@@ -4,7 +4,7 @@ use byteorder::{LittleEndian, WriteBytesExt};
 
 use crate::error::PmxError;
 use crate::header::Header;
-use crate::read_vec;
+use crate::kits::read_vec;
 
 #[derive(Default, Debug, PartialEq, Clone)]
 pub struct Textures {

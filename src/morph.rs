@@ -5,7 +5,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::error::PmxError;
 use crate::header::Header;
-use crate::{read_bool, read_f32x3, read_f32x4, read_vec, write_f32x3, write_f32x4};
+use crate::kits::{read_bool, read_f32x3, read_f32x4, read_vec, write_f32x3, write_f32x4};
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct Morphs {

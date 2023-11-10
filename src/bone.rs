@@ -5,7 +5,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::error::PmxError;
 use crate::header::Header;
-use crate::{read_bool, read_f32x3, read_vec, write_f32x3};
+use crate::kits::{read_bool, read_f32x3, read_vec, write_f32x3};
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct Bones {
