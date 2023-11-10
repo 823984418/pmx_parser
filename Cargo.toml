@@ -1,0 +1,23 @@
+[package]
+name = "pmx_parser"
+version = "0.1.0"
+edition = "2021"
+authors = ["邱仕洪 <823984418@qq.com>"]
+keywords = ["pmx", "format_parser"]
+categories = ["parser-implementations"]
+description = "load and save .pmx model file."
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+
+[dependencies.byteorder]
+version = "1.5"
+
+[dependencies.thiserror]
+version = "1.0"
+
+[dependencies.encoding_rs]
+version = "0.8"
+
+[dependencies.bitflags]
+version = "2"
