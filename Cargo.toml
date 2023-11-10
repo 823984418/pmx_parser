@@ -7,6 +7,7 @@ keywords = ["pmx", "format_parser"]
 categories = ["parser-implementations"]
 description = "load and save .pmx model file."
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/823984418/pmx_parser"
 
 [dependencies]
 
