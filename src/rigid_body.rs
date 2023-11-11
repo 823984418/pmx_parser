@@ -9,7 +9,7 @@ use crate::kits::{read_f32x3, read_vec, write_f32x3};
 
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct RigidBodies {
-    rigid_bodies: Vec<RigidBody>,
+    pub rigid_bodies: Vec<RigidBody>,
 }
 
 impl RigidBodies {
