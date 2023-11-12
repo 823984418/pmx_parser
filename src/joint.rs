@@ -6,6 +6,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crate::error::PmxError;
 use crate::header::Header;
 use crate::kits::{read_f32x3, read_vec, write_f32x3};
+use crate::RigidBodyIndex;
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct Joints {
@@ -35,8 +36,8 @@ pub struct Joint {
     pub name: String,
     pub name_en: String,
     pub joint_type: JointType,
-    pub a_rigid_index: u32,
-    pub b_rigid_index: u32,
+    pub a_rigid_index: RigidBodyIndex,
+    pub b_rigid_index: RigidBodyIndex,
     pub position: [f32; 3],
     pub rotation: [f32; 3],
     pub move_limit_down: [f32; 3],
@@ -61,8 +62,8 @@ impl Joint {
             name: header.encoding.read(read)?,
             name_en: header.encoding.read(read)?,
             joint_type: JointType::try_from(read.read_u8()?)?,
-            a_rigid_index: header.rigid_body_index.read_i(read)?,
-            b_rigid_index: header.rigid_body_index.read_i(read)?,
+            a_rigid_index: header.rigid_body_index.read(read)?,
+            b_rigid_index: header.rigid_body_index.read(read)?,
             position: read_f32x3(read)?,
             rotation: read_f32x3(read)?,
             move_limit_down: read_f32x3(read)?,

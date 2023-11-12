@@ -2,6 +2,7 @@ use std::fmt::{Debug, Formatter};
 use std::io::{Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use crate::BoneIndex;
 
 use crate::error::PmxError;
 use crate::header::Header;
@@ -35,7 +36,7 @@ pub struct Bone {
     pub name: String,
     pub name_en: String,
     pub position: [f32; 3],
-    pub parent_bone_index: u32,
+    pub parent_bone_index: BoneIndex,
     pub priority: u32,
     pub connect: BoneConnection,
     pub rotatable: bool,
@@ -47,7 +48,7 @@ pub struct Bone {
     pub fixed_axis: Option<[f32; 3]>,
     pub local_axis: Option<([f32; 3], [f32; 3])>,
     pub physics_after_deform: bool,
-    pub external_parent_bone_index: Option<u32>,
+    pub external_parent_bone_index: Option<BoneIndex>,
     pub ik: Option<Ik>,
     pub unknown_0040: bool,
     pub unknown_2000: bool,
@@ -72,7 +73,7 @@ impl Bone {
         let name = header.encoding.read(read)?;
         let name_en = header.encoding.read(read)?;
         let position = read_f32x3(read)?;
-        let parent_bone_index = header.bone_index.read_i(read)?;
+        let parent_bone_index = header.bone_index.read(read)?;
         let priority = read.read_u32::<LittleEndian>()?;
 
         let flags = BoneFlags::from_bits_retain(read.read_u16::<LittleEndian>()?);
@@ -98,14 +99,14 @@ impl Bone {
             inherit_local: flags.contains(BoneFlags::INHERIT_LOCAL),
             physics_after_deform: flags.contains(BoneFlags::PHYSICS_AFTER_DEFORM),
             connect: if flags.contains(BoneFlags::CONNECT_TO_OTHER_BONE) {
-                BoneConnection::BoneIndex(header.bone_index.read_i(read)?)
+                BoneConnection::BoneIndex(header.bone_index.read(read)?)
             } else {
                 BoneConnection::Position(read_f32x3(read)?)
             },
             inherit_rotate_or_translation: match rotate_or_translation {
                 Some(rotate_or_translation) => Some(InheritRotateOrTranslation {
                     rotate_or_translation,
-                    bone_index: header.bone_index.read_i(read)?,
+                    bone_index: header.bone_index.read(read)?,
                     weight: read.read_f32::<LittleEndian>()?,
                 }),
                 None => None,
@@ -121,7 +122,7 @@ impl Bone {
                 None
             },
             external_parent_bone_index: if flags.contains(BoneFlags::EXTERNAL_PARENT_DEFORM) {
-                Some(header.bone_index.read_i(read)?)
+                Some(header.bone_index.read(read)?)
             } else {
                 None
             },
@@ -261,14 +262,14 @@ bitflags::bitflags! {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum BoneConnection {
-    BoneIndex(u32),
+    BoneIndex(BoneIndex),
     Position([f32; 3]),
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct InheritRotateOrTranslation {
     rotate_or_translation: RotateOrTranslation,
-    bone_index: u32,
+    bone_index: BoneIndex,
     weight: f32,
 }
 
@@ -281,7 +282,7 @@ pub enum RotateOrTranslation {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ik {
-    pub target_bone_index: u32,
+    pub target_bone_index: BoneIndex,
     pub iter_count: u32,
     pub limit_angle: f32,
     pub links: Vec<IkLink>,
@@ -290,7 +291,7 @@ pub struct Ik {
 impl Ik {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            target_bone_index: header.bone_index.read_i(read)?,
+            target_bone_index: header.bone_index.read(read)?,
             iter_count: read.read_u32::<LittleEndian>()?,
             limit_angle: read.read_f32::<LittleEndian>()?,
             links: read_vec(read, |read| IkLink::read(header, read))?,
@@ -311,14 +312,14 @@ impl Ik {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct IkLink {
-    pub bone_index: u32,
+    pub bone_index: BoneIndex,
     pub angle_limit: Option<([f32; 3], [f32; 3])>,
 }
 
 impl IkLink {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            bone_index: header.bone_index.read_i(read)?,
+            bone_index: header.bone_index.read(read)?,
             angle_limit: match read_bool(read)? {
                 true => Some((read_f32x3(read)?, read_f32x3(read)?)),
                 false => None,

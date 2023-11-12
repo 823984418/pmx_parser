@@ -2,6 +2,7 @@ use std::fmt::{Debug, Formatter};
 use std::io::{Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use crate::BoneIndex;
 
 use crate::error::PmxError;
 use crate::header::Header;
@@ -34,7 +35,7 @@ impl RigidBodies {
 pub struct RigidBody {
     pub name: String,
     pub name_en: String,
-    pub bone_index: u32,
+    pub bone_index: BoneIndex,
     pub group: u8,
     pub un_collision_group_flag: u16,
     pub form: RigidForm,
@@ -62,7 +63,7 @@ impl RigidBody {
         Ok(Self {
             name: header.encoding.read(read)?,
             name_en: header.encoding.read(read)?,
-            bone_index: header.bone_index.read_i(read)?,
+            bone_index: header.bone_index.read(read)?,
             group: read.read_u8()?,
             un_collision_group_flag: read.read_u16::<LittleEndian>()?,
             form: RigidForm::try_from(read.read_u8()?)?,

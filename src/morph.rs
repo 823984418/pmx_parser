@@ -6,6 +6,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crate::error::PmxError;
 use crate::header::Header;
 use crate::kits::{read_bool, read_f32x3, read_f32x4, read_vec, write_f32x3, write_f32x4};
+use crate::{BoneIndex, MaterialIndex, MorphIndex, RigidBodyIndex, VertexIndex};
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct Morphs {
@@ -241,14 +242,14 @@ impl MorphData {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct GroupMorph {
-    pub morph_index: u32,
+    pub morph_index: MorphIndex,
     pub morph_factor: f32,
 }
 
 impl GroupMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            morph_index: header.morph_index.read_i(read)?,
+            morph_index: header.morph_index.read(read)?,
             morph_factor: read.read_f32::<LittleEndian>()?,
         })
     }
@@ -261,14 +262,14 @@ impl GroupMorph {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct VertexMorph {
-    pub vertex_index: u32,
+    pub vertex_index: VertexIndex,
     pub offset: [f32; 3],
 }
 
 impl VertexMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            vertex_index: header.vertex_index.read_u(read)?,
+            vertex_index: header.vertex_index.read(read)?,
             offset: read_f32x3(read)?,
         })
     }
@@ -281,7 +282,7 @@ impl VertexMorph {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct BoneMorph {
-    pub bone_index: u32,
+    pub bone_index: BoneIndex,
     pub translates: [f32; 3],
     pub rotates: [f32; 4],
 }
@@ -289,7 +290,7 @@ pub struct BoneMorph {
 impl BoneMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            bone_index: header.bone_index.read_i(read)?,
+            bone_index: header.bone_index.read(read)?,
             translates: read_f32x3(read)?,
             rotates: read_f32x4(read)?,
         })
@@ -304,14 +305,14 @@ impl BoneMorph {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct UVMorph {
-    pub vertex_index: u32,
+    pub vertex_index: VertexIndex,
     pub offset: [f32; 4],
 }
 
 impl UVMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            vertex_index: header.vertex_index.read_u(read)?,
+            vertex_index: header.vertex_index.read(read)?,
             offset: read_f32x4(read)?,
         })
     }
@@ -324,7 +325,7 @@ impl UVMorph {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MaterialMorph {
-    pub material_index: u32,
+    pub material_index: MaterialIndex,
     pub formula: u8,
     pub diffuse: [f32; 4],
     pub specular: [f32; 3],
@@ -340,7 +341,7 @@ pub struct MaterialMorph {
 impl MaterialMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            material_index: header.material_index.read_i(read)?,
+            material_index: header.material_index.read(read)?,
             formula: read.read_u8()?,
             diffuse: read_f32x4(read)?,
             specular: read_f32x3(read)?,
@@ -371,14 +372,14 @@ impl MaterialMorph {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct FlipMorph {
-    pub morph_index: u32,
+    pub morph_index: MorphIndex,
     pub morph_factor: f32,
 }
 
 impl FlipMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            morph_index: header.morph_index.read_i(read)?,
+            morph_index: header.morph_index.read(read)?,
             morph_factor: read.read_f32::<LittleEndian>()?,
         })
     }
@@ -391,7 +392,7 @@ impl FlipMorph {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImpulseMorph {
-    pub rigid_index: u32,
+    pub rigid_index: RigidBodyIndex,
     pub is_local: bool,
     pub velocity: [f32; 3],
     pub torque: [f32; 3],
@@ -400,7 +401,7 @@ pub struct ImpulseMorph {
 impl ImpulseMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            rigid_index: header.rigid_body_index.read_i(read)?,
+            rigid_index: header.rigid_body_index.read(read)?,
             is_local: read_bool(read)?,
             velocity: read_f32x3(read)?,
             torque: read_f32x3(read)?,

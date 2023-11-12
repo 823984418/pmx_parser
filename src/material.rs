@@ -5,6 +5,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crate::error::PmxError;
 use crate::header::Header;
 use crate::kits::{read_f32x3, read_f32x4, read_vec, write_f32x3, write_f32x4};
+use crate::TextureIndex;
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct Materials {
@@ -39,8 +40,8 @@ pub struct Material {
     pub flags: MaterialFlags,
     pub edge_color: [f32; 4],
     pub edge_size: f32,
-    pub texture_index: u32,
-    pub env_texture_index: u32,
+    pub texture_index: TextureIndex,
+    pub env_texture_index: TextureIndex,
     pub mix: Mix,
     pub toon_texture: ToonTexture,
     pub comment: String,
@@ -58,8 +59,8 @@ impl Material {
             flags: MaterialFlags::from_bits_retain(read.read_u8()?),
             edge_color: read_f32x4(read)?,
             edge_size: read.read_f32::<LittleEndian>()?,
-            texture_index: header.texture_index.read_i(read)?,
-            env_texture_index: header.texture_index.read_i(read)?,
+            texture_index: header.texture_index.read(read)?,
+            env_texture_index: header.texture_index.read(read)?,
             mix: Mix::try_from(read.read_u8()?)?,
             toon_texture: ToonTexture::read(header, read)?,
             comment: header.encoding.read(read)?,
@@ -124,7 +125,7 @@ impl TryFrom<u8> for Mix {
 }
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum ToonTexture {
-    TextureIndex(u32),
+    TextureIndex(TextureIndex),
     CommonIndex(u8),
 }
 
@@ -132,7 +133,7 @@ impl ToonTexture {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         let t = read.read_u8()?;
         match t {
-            0x00 => Ok(Self::TextureIndex(header.texture_index.read_i(read)?)),
+            0x00 => Ok(Self::TextureIndex(header.texture_index.read(read)?)),
             0x01 => Ok(Self::CommonIndex(read.read_u8()?)),
             _ => Err(PmxError::ToonError),
         }

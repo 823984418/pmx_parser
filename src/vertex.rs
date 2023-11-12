@@ -2,6 +2,7 @@ use std::fmt::{Debug, Formatter};
 use std::io::{Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use crate::BoneIndex;
 
 use crate::error::PmxError;
 use crate::header::Header;
@@ -104,21 +105,21 @@ impl Vertices {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Skin {
     /// a bone with weight 1.0
-    BDEF1 { bone_index: u32 },
+    BDEF1 { bone_index: BoneIndex },
     /// 2 bones with normalized weight
     /// * bone_weight_1 : weight of bone_index_1
     /// * bone_weight_2 : 1.0 - bone_weight_1
     BDEF2 {
-        bone_index_1: u32,
-        bone_index_2: u32,
+        bone_index_1: BoneIndex,
+        bone_index_2: BoneIndex,
         bone_weight_1: f32,
     },
     /// 4 bones without normalized weights guaranty.
     BDEF4 {
-        bone_index_1: u32,
-        bone_index_2: u32,
-        bone_index_3: u32,
-        bone_index_4: u32,
+        bone_index_1: BoneIndex,
+        bone_index_2: BoneIndex,
+        bone_index_3: BoneIndex,
+        bone_index_4: BoneIndex,
         bone_weight_1: f32,
         bone_weight_2: f32,
         bone_weight_3: f32,
@@ -126,8 +127,8 @@ pub enum Skin {
     },
     /// spherical deforming bones
     SDEF {
-        bone_index_1: u32,
-        bone_index_2: u32,
+        bone_index_1: BoneIndex,
+        bone_index_2: BoneIndex,
         bone_weight_1: f32,
         sdef_c: [f32; 3],
         sdef_r0: [f32; 3],
@@ -135,10 +136,10 @@ pub enum Skin {
     },
     /// DualQuaternion deforming
     QDEF {
-        bone_index_1: u32,
-        bone_index_2: u32,
-        bone_index_3: u32,
-        bone_index_4: u32,
+        bone_index_1: BoneIndex,
+        bone_index_2: BoneIndex,
+        bone_index_3: BoneIndex,
+        bone_index_4: BoneIndex,
         bone_weight_1: f32,
         bone_weight_2: f32,
         bone_weight_3: f32,
@@ -151,36 +152,36 @@ impl Skin {
         let t = read.read_u8()?;
         match t {
             0 => Ok(Skin::BDEF1 {
-                bone_index: header.bone_index.read_i(read)?,
+                bone_index: header.bone_index.read(read)?,
             }),
             1 => Ok(Skin::BDEF2 {
-                bone_index_1: header.bone_index.read_i(read)?,
-                bone_index_2: header.bone_index.read_i(read)?,
+                bone_index_1: header.bone_index.read(read)?,
+                bone_index_2: header.bone_index.read(read)?,
                 bone_weight_1: read.read_f32::<LittleEndian>()?,
             }),
             2 => Ok(Skin::BDEF4 {
-                bone_index_1: header.bone_index.read_i(read)?,
-                bone_index_2: header.bone_index.read_i(read)?,
-                bone_index_3: header.bone_index.read_i(read)?,
-                bone_index_4: header.bone_index.read_i(read)?,
+                bone_index_1: header.bone_index.read(read)?,
+                bone_index_2: header.bone_index.read(read)?,
+                bone_index_3: header.bone_index.read(read)?,
+                bone_index_4: header.bone_index.read(read)?,
                 bone_weight_1: read.read_f32::<LittleEndian>()?,
                 bone_weight_2: read.read_f32::<LittleEndian>()?,
                 bone_weight_3: read.read_f32::<LittleEndian>()?,
                 bone_weight_4: read.read_f32::<LittleEndian>()?,
             }),
             3 => Ok(Skin::SDEF {
-                bone_index_1: header.bone_index.read_i(read)?,
-                bone_index_2: header.bone_index.read_i(read)?,
+                bone_index_1: header.bone_index.read(read)?,
+                bone_index_2: header.bone_index.read(read)?,
                 bone_weight_1: read.read_f32::<LittleEndian>()?,
                 sdef_c: read_f32x3(read)?,
                 sdef_r0: read_f32x3(read)?,
                 sdef_r1: read_f32x3(read)?,
             }),
             4 => Ok(Skin::QDEF {
-                bone_index_1: header.bone_index.read_i(read)?,
-                bone_index_2: header.bone_index.read_i(read)?,
-                bone_index_3: header.bone_index.read_i(read)?,
-                bone_index_4: header.bone_index.read_i(read)?,
+                bone_index_1: header.bone_index.read(read)?,
+                bone_index_2: header.bone_index.read(read)?,
+                bone_index_3: header.bone_index.read(read)?,
+                bone_index_4: header.bone_index.read(read)?,
                 bone_weight_1: read.read_f32::<LittleEndian>()?,
                 bone_weight_2: read.read_f32::<LittleEndian>()?,
                 bone_weight_3: read.read_f32::<LittleEndian>()?,

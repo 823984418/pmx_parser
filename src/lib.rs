@@ -23,6 +23,13 @@ pub mod vertex;
 
 pub(crate) mod kits;
 
+pub type VertexIndex = u32;
+pub type TextureIndex = i32;
+pub type MaterialIndex = i32;
+pub type BoneIndex = i32;
+pub type MorphIndex = i32;
+pub type RigidBodyIndex = i32;
+
 pub fn pmx_read<R: Read>(read: &mut R) -> Result<(Header, Pmx), PmxError> {
     let header = Header::read(read)?;
     let pmx = Pmx::read(&header, read)?;

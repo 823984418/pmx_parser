@@ -84,42 +84,22 @@ impl TryFrom<u8> for IndexSize {
     }
 }
 
-impl IndexSize {
-    pub fn from_count(count: u32) -> Self {
-        match count {
-            0..=0xFE => Self::Bit8,
-            0xFF..=0xFFFE => Self::Bit16,
-            0xFFFF.. => Self::Bit32,
-        }
-    }
+pub(crate) trait PmxIndexType: Sized {
+    fn read_pmx_index<R: Read>(read: &mut R, size: IndexSize) -> Result<Self, PmxError>;
+    fn write_pmx_index<W: Write>(write: &mut W, size: IndexSize, index: Self) -> Result<(), PmxError>;
+}
 
-    #[inline(always)]
-    pub fn read_u<R: Read>(&self, read: &mut R) -> Result<u32, PmxError> {
-        match self {
+impl PmxIndexType for u32 {
+    fn read_pmx_index<R: Read>(read: &mut R, size: IndexSize) -> Result<Self, PmxError> {
+        match size {
             IndexSize::Bit8 => Ok(read.read_u8()? as u32),
             IndexSize::Bit16 => Ok(read.read_u16::<LittleEndian>()? as u32),
             IndexSize::Bit32 => Ok(read.read_u32::<LittleEndian>()?),
         }
     }
 
-    #[inline(always)]
-    pub fn read_i<R: Read>(&self, read: &mut R) -> Result<u32, PmxError> {
-        match self {
-            IndexSize::Bit8 => {
-                let i = read.read_u8()?;
-                Ok(if i == u8::MAX { u32::MAX } else { i as u32 })
-            }
-            IndexSize::Bit16 => {
-                let i = read.read_u16::<LittleEndian>()?;
-                Ok(if i == u16::MAX { u32::MAX } else { i as u32 })
-            }
-            IndexSize::Bit32 => Ok(read.read_u32::<LittleEndian>()?),
-        }
-    }
-
-    #[inline(always)]
-    pub fn write<W: Write>(&self, write: &mut W, index: u32) -> Result<(), PmxError> {
-        match self {
+    fn write_pmx_index<W: Write>(write: &mut W, size: IndexSize, index: Self) -> Result<(), PmxError> {
+        match size {
             IndexSize::Bit8 => {
                 write.write_u8(index.try_into().map_err(|_| PmxError::IndexError)?)?
             }
@@ -128,6 +108,56 @@ impl IndexSize {
             IndexSize::Bit32 => write.write_u32::<LittleEndian>(index)?,
         }
         Ok(())
+    }
+}
+
+impl PmxIndexType for i32 {
+    fn read_pmx_index<R: Read>(read: &mut R, size: IndexSize) -> Result<Self, PmxError> {
+        match size {
+            IndexSize::Bit8 => Ok(read.read_i8()? as i32),
+            IndexSize::Bit16 => Ok(read.read_i16::<LittleEndian>()? as i32),
+            IndexSize::Bit32 => Ok(read.read_i32::<LittleEndian>()?),
+        }
+    }
+
+    fn write_pmx_index<W: Write>(write: &mut W, size: IndexSize, index: Self) -> Result<(), PmxError> {
+        match size {
+            IndexSize::Bit8 => {
+                write.write_i8(index.try_into().map_err(|_| PmxError::IndexError)?)?
+            }
+            IndexSize::Bit16 => write
+                .write_i16::<LittleEndian>(index.try_into().map_err(|_| PmxError::IndexError)?)?,
+            IndexSize::Bit32 => write.write_i32::<LittleEndian>(index)?,
+        }
+        Ok(())
+    }
+}
+
+impl IndexSize {
+    pub fn from_count_u(count: u32) -> Self {
+        match count {
+            0..=0xFE => Self::Bit8,
+            0xFF..=0xFFFE => Self::Bit16,
+            0xFFFF.. => Self::Bit32,
+        }
+    }
+
+    pub fn from_count_i(count: u32) -> Self {
+        match count {
+            0..=0x7E => Self::Bit8,
+            0x7F..=0x7FFE => Self::Bit16,
+            0x7FFF.. => Self::Bit32,
+        }
+    }
+
+    #[inline(always)]
+    pub(crate) fn read<R: Read, T: PmxIndexType>(self, read: &mut R) -> Result<T, PmxError> {
+        T::read_pmx_index(read, self)
+    }
+
+    #[inline(always)]
+    pub(crate) fn write<W: Write, T: PmxIndexType>(self, write: &mut W, index: T) -> Result<(), PmxError> {
+        T::write_pmx_index(write, self, index)
     }
 }
 
@@ -151,12 +181,12 @@ impl Header {
             version,
             encoding: Encoding::Utf16Le,
             vertex_ext_vec4: pmx.vertices.ext_vec4s.len() as u8,
-            vertex_index: IndexSize::from_count(pmx.vertices.count()),
-            texture_index: IndexSize::from_count(pmx.textures.count()),
-            material_index: IndexSize::from_count(pmx.materials.count()),
-            bone_index: IndexSize::from_count(pmx.bones.count()),
-            morph_index: IndexSize::from_count(pmx.morphs.count()),
-            rigid_body_index: IndexSize::from_count(pmx.rigid_bodies.count()),
+            vertex_index: IndexSize::from_count_i(pmx.vertices.count()),
+            texture_index: IndexSize::from_count_u(pmx.textures.count()),
+            material_index: IndexSize::from_count_u(pmx.materials.count()),
+            bone_index: IndexSize::from_count_u(pmx.bones.count()),
+            morph_index: IndexSize::from_count_u(pmx.morphs.count()),
+            rigid_body_index: IndexSize::from_count_u(pmx.rigid_bodies.count()),
             unknown_data: vec![],
         }
     }

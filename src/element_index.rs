@@ -6,10 +6,11 @@ use byteorder::{LittleEndian, WriteBytesExt};
 use crate::error::PmxError;
 use crate::header::Header;
 use crate::kits::read_vec;
+use crate::VertexIndex;
 
 #[derive(Default, Clone, Eq, PartialEq)]
 pub struct ElementIndices {
-    pub element_indices: Vec<u32>,
+    pub element_indices: Vec<VertexIndex>,
 }
 
 impl Debug for ElementIndices {
@@ -27,7 +28,7 @@ impl ElementIndices {
 
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            element_indices: read_vec(read, |read| header.vertex_index.read_u(read))?,
+            element_indices: read_vec(read, |read| header.vertex_index.read(read))?,
         })
     }
 

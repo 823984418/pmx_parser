@@ -1,6 +1,7 @@
 use std::io::{Read, Write};
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use crate::{BoneIndex, MorphIndex};
 
 use crate::error::PmxError;
 use crate::header::Header;
@@ -60,16 +61,16 @@ impl DisplayFrame {
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum DisplayFrameItem {
-    BoneIndex(u32),
-    MorphIndex(u32),
+    BoneIndex(BoneIndex),
+    MorphIndex(MorphIndex),
 }
 
 impl DisplayFrameItem {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         let t = read.read_u8()?;
         match t {
-            0 => Ok(Self::BoneIndex(header.bone_index.read_i(read)?)),
-            1 => Ok(Self::MorphIndex(header.morph_index.read_i(read)?)),
+            0 => Ok(Self::BoneIndex(header.bone_index.read(read)?)),
+            1 => Ok(Self::MorphIndex(header.morph_index.read(read)?)),
             _ => Err(PmxError::DisplayFrameError),
         }
     }
