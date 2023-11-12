@@ -58,8 +58,8 @@ impl Material {
             flags: MaterialFlags::from_bits_retain(read.read_u8()?),
             edge_color: read_f32x4(read)?,
             edge_size: read.read_f32::<LittleEndian>()?,
-            texture_index: header.texture_index.read(read)?,
-            env_texture_index: header.texture_index.read(read)?,
+            texture_index: header.texture_index.read_i(read)?,
+            env_texture_index: header.texture_index.read_i(read)?,
             mix: Mix::try_from(read.read_u8()?)?,
             toon_texture: ToonTexture::read(header, read)?,
             comment: header.encoding.read(read)?,
@@ -132,7 +132,7 @@ impl ToonTexture {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         let t = read.read_u8()?;
         match t {
-            0x00 => Ok(Self::TextureIndex(header.texture_index.read(read)?)),
+            0x00 => Ok(Self::TextureIndex(header.texture_index.read_i(read)?)),
             0x01 => Ok(Self::CommonIndex(read.read_u8()?)),
             _ => Err(PmxError::ToonError),
         }

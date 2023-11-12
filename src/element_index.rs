@@ -27,7 +27,7 @@ impl ElementIndices {
 
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            element_indices: read_vec(read, |read| header.vertex_index.read(read))?,
+            element_indices: read_vec(read, |read| header.vertex_index.read_u(read))?,
         })
     }
 

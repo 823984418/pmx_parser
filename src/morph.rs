@@ -248,7 +248,7 @@ pub struct GroupMorph {
 impl GroupMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            morph_index: header.morph_index.read(read)?,
+            morph_index: header.morph_index.read_i(read)?,
             morph_factor: read.read_f32::<LittleEndian>()?,
         })
     }
@@ -268,7 +268,7 @@ pub struct VertexMorph {
 impl VertexMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            vertex_index: header.vertex_index.read(read)?,
+            vertex_index: header.vertex_index.read_u(read)?,
             offset: read_f32x3(read)?,
         })
     }
@@ -289,7 +289,7 @@ pub struct BoneMorph {
 impl BoneMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            bone_index: header.bone_index.read(read)?,
+            bone_index: header.bone_index.read_i(read)?,
             translates: read_f32x3(read)?,
             rotates: read_f32x4(read)?,
         })
@@ -311,7 +311,7 @@ pub struct UVMorph {
 impl UVMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            vertex_index: header.vertex_index.read(read)?,
+            vertex_index: header.vertex_index.read_u(read)?,
             offset: read_f32x4(read)?,
         })
     }
@@ -340,7 +340,7 @@ pub struct MaterialMorph {
 impl MaterialMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            material_index: header.material_index.read(read)?,
+            material_index: header.material_index.read_i(read)?,
             formula: read.read_u8()?,
             diffuse: read_f32x4(read)?,
             specular: read_f32x3(read)?,
@@ -378,7 +378,7 @@ pub struct FlipMorph {
 impl FlipMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            morph_index: header.morph_index.read(read)?,
+            morph_index: header.morph_index.read_i(read)?,
             morph_factor: read.read_f32::<LittleEndian>()?,
         })
     }
@@ -400,7 +400,7 @@ pub struct ImpulseMorph {
 impl ImpulseMorph {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            rigid_index: header.rigid_body_index.read(read)?,
+            rigid_index: header.rigid_body_index.read_i(read)?,
             is_local: read_bool(read)?,
             velocity: read_f32x3(read)?,
             torque: read_f32x3(read)?,

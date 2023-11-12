@@ -72,7 +72,7 @@ impl Bone {
         let name = header.encoding.read(read)?;
         let name_en = header.encoding.read(read)?;
         let position = read_f32x3(read)?;
-        let parent_bone_index = header.bone_index.read(read)?;
+        let parent_bone_index = header.bone_index.read_i(read)?;
         let priority = read.read_u32::<LittleEndian>()?;
 
         let flags = BoneFlags::from_bits_retain(read.read_u16::<LittleEndian>()?);
@@ -98,14 +98,14 @@ impl Bone {
             inherit_local: flags.contains(BoneFlags::INHERIT_LOCAL),
             physics_after_deform: flags.contains(BoneFlags::PHYSICS_AFTER_DEFORM),
             connect: if flags.contains(BoneFlags::CONNECT_TO_OTHER_BONE) {
-                BoneConnection::BoneIndex(header.bone_index.read(read)?)
+                BoneConnection::BoneIndex(header.bone_index.read_i(read)?)
             } else {
                 BoneConnection::Position(read_f32x3(read)?)
             },
             inherit_rotate_or_translation: match rotate_or_translation {
                 Some(rotate_or_translation) => Some(InheritRotateOrTranslation {
                     rotate_or_translation,
-                    bone_index: header.bone_index.read(read)?,
+                    bone_index: header.bone_index.read_i(read)?,
                     weight: read.read_f32::<LittleEndian>()?,
                 }),
                 None => None,
@@ -121,7 +121,7 @@ impl Bone {
                 None
             },
             external_parent_bone_index: if flags.contains(BoneFlags::EXTERNAL_PARENT_DEFORM) {
-                Some(header.bone_index.read(read)?)
+                Some(header.bone_index.read_i(read)?)
             } else {
                 None
             },
@@ -290,7 +290,7 @@ pub struct Ik {
 impl Ik {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            target_bone_index: header.bone_index.read(read)?,
+            target_bone_index: header.bone_index.read_i(read)?,
             iter_count: read.read_u32::<LittleEndian>()?,
             limit_angle: read.read_f32::<LittleEndian>()?,
             links: read_vec(read, |read| IkLink::read(header, read))?,
@@ -318,7 +318,7 @@ pub struct IkLink {
 impl IkLink {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            bone_index: header.bone_index.read(read)?,
+            bone_index: header.bone_index.read_i(read)?,
             angle_limit: match read_bool(read)? {
                 true => Some((read_f32x3(read)?, read_f32x3(read)?)),
                 false => None,

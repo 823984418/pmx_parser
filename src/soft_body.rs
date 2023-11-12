@@ -91,7 +91,7 @@ impl SoftBody {
             name: header.encoding.read(read)?,
             name_en: header.encoding.read(read)?,
             form: SoftBodyForm::try_from(read.read_u8()?)?,
-            material_index: header.material_index.read(read)?,
+            material_index: header.material_index.read_i(read)?,
             group: read.read_u8()?,
             un_collision_group_flag: read.read_u16::<LittleEndian>()?,
             bit_flag: read.read_u8()?,
@@ -126,7 +126,7 @@ impl SoftBody {
             ast: read.read_f32::<LittleEndian>()?,
             vst: read.read_f32::<LittleEndian>()?,
             anchor_rigid: read_vec(read, |read| SoftBodyAnchorRigid::read(header, read))?,
-            pin_vertex_index: read_vec(read, |read| header.vertex_index.read(read))?,
+            pin_vertex_index: read_vec(read, |read| header.vertex_index.read_u(read))?,
         })
     }
     pub fn write<W: Write>(&self, header: &Header, write: &mut W) -> Result<(), PmxError> {
@@ -232,8 +232,8 @@ pub struct SoftBodyAnchorRigid {
 impl SoftBodyAnchorRigid {
     pub fn read<R: Read>(header: &Header, read: &mut R) -> Result<Self, PmxError> {
         Ok(Self {
-            rigid_index: header.rigid_body_index.read(read)?,
-            vertex_index: header.vertex_index.read(read)?,
+            rigid_index: header.rigid_body_index.read_i(read)?,
+            vertex_index: header.vertex_index.read_u(read)?,
             near_mode: read_bool(read)?,
         })
     }

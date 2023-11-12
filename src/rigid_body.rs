@@ -62,7 +62,7 @@ impl RigidBody {
         Ok(Self {
             name: header.encoding.read(read)?,
             name_en: header.encoding.read(read)?,
-            bone_index: header.bone_index.read(read)?,
+            bone_index: header.bone_index.read_i(read)?,
             group: read.read_u8()?,
             un_collision_group_flag: read.read_u16::<LittleEndian>()?,
             form: RigidForm::try_from(read.read_u8()?)?,

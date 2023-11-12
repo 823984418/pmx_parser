@@ -94,10 +94,25 @@ impl IndexSize {
     }
 
     #[inline(always)]
-    pub fn read<R: Read>(&self, read: &mut R) -> Result<u32, PmxError> {
+    pub fn read_u<R: Read>(&self, read: &mut R) -> Result<u32, PmxError> {
         match self {
             IndexSize::Bit8 => Ok(read.read_u8()? as u32),
             IndexSize::Bit16 => Ok(read.read_u16::<LittleEndian>()? as u32),
+            IndexSize::Bit32 => Ok(read.read_u32::<LittleEndian>()?),
+        }
+    }
+
+    #[inline(always)]
+    pub fn read_i<R: Read>(&self, read: &mut R) -> Result<u32, PmxError> {
+        match self {
+            IndexSize::Bit8 => {
+                let i = read.read_u8()?;
+                Ok(if i == u8::MAX { u32::MAX } else { i as u32 })
+            }
+            IndexSize::Bit16 => {
+                let i = read.read_u16::<LittleEndian>()?;
+                Ok(if i == u16::MAX { u32::MAX } else { i as u32 })
+            }
             IndexSize::Bit32 => Ok(read.read_u32::<LittleEndian>()?),
         }
     }
